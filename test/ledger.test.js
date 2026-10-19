@@ -41,3 +41,26 @@ test('the summary command prints each month with its categories', () => {
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
 })
+
+test('the summary command prints a single JSON line with --json', () => {
+  const lines = []
+  const code = main(['summary', 'examples/transactions.csv', '--json', '--rules', 'examples/rules.json'], (l) => lines.push(l))
+  assert.equal(code, 0)
+  assert.equal(lines.length, 1)
+  assert.deepEqual(JSON.parse(lines[0]), {
+    '2026-02': { total: 6.4, byCategory: { coffee: 6.4 } },
+    '2026-03': {
+      total: 1540.61,
+      byCategory: { housing: 1450, coffee: 4.95, groceries: 70.17, subscriptions: 15.49 },
+    },
+    '2026-04': { total: 1465.49, byCategory: { housing: 1450, subscriptions: 15.49 } },
+  })
+})
+
+test('the summary command supports --json without --rules', () => {
+  const lines = []
+  const code = main(['summary', 'examples/transactions.csv', '--json'], (l) => lines.push(l))
+  assert.equal(code, 0)
+  assert.equal(lines.length, 1)
+  assert.equal(JSON.parse(lines[0])['2026-02'].byCategory.uncategorized, 6.4)
+})
