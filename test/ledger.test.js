@@ -13,11 +13,13 @@ test('parseCsv maps each row to the header', () => {
 })
 
 test('parseAmount reads dollar strings', () => {
-  assert.equal(parseAmount('$1,450.00'), 1450)
+  assert.equal(parseAmount('$1,450.00'), 145000)
+  assert.equal(parseAmount('$4.95'), 495)
+  assert.equal(parseAmount('-12'), -1200)
 })
 
 test('formatMoney shows two decimals', () => {
-  assert.equal(formatMoney(4.5), '$4.50')
+  assert.equal(formatMoney(450), '$4.50')
 })
 
 test('categorize uses the first matching rule', () => {

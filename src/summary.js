@@ -1,4 +1,4 @@
-// Groups transactions by calendar month: { '2026-03': { total, byCategory: { coffee: 12.5 } } }
+// Groups transactions by calendar month: { '2026-03': { total, byCategory: { coffee: 1250 } } }
 export function summarizeByMonth(transactions) {
   const months = {}
   for (const t of transactions) {
