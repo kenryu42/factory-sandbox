@@ -72,3 +72,28 @@ test('the budget command reports when all categories are within budget', () => {
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('the budget command does not report over when spending exactly equals the limit', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ledger-budget-'))
+  const budgets = join(dir, 'budgets.json')
+  const rules = join(dir, 'rules.json')
+  const transactions = join(dir, 'transactions.csv')
+  writeFileSync(budgets, JSON.stringify({ coffee: 0.3 }))
+  writeFileSync(rules, JSON.stringify([{ match: 'Starbucks', category: 'coffee' }]))
+  writeFileSync(transactions, 'date,description,amount\n2026-03-01,Starbucks,0.10\n2026-03-02,Starbucks,0.20\n')
+  const lines = []
+  try {
+    const code = main(['budget', transactions, '--budgets', budgets, '--rules', rules], (l) => lines.push(l))
+    assert.equal(code, 0)
+    assert.deepEqual(lines, ['All categories within budget.'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('the budget command requires --budgets', () => {
+  const lines = []
+  const code = main(['budget', 'examples/transactions.csv'], (l) => lines.push(l))
+  assert.equal(code, 1)
+  assert.deepEqual(lines, ['Missing required --budgets <budgets.json>'])
+})
