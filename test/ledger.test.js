@@ -41,3 +41,11 @@ test('the summary command prints each month with its categories', () => {
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
 })
+
+test('parseCsv handles CRLF, quoted commas, quotes and line breaks', () => {
+  const text = 'date,description,amount\r\n\r\n2026-03-02,"Dinner\nwith ""the"" team, late",40\r\n2026-03-03, Cafe ,4'
+  assert.deepEqual(parseCsv(text), [
+    { date: '2026-03-02', description: 'Dinner\nwith "the" team, late', amount: '40' },
+    { date: '2026-03-03', description: 'Cafe', amount: '4' },
+  ])
+})
