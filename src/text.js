@@ -3,5 +3,5 @@ export function slugify(title) {
 }
 
 export function wordCount(text) {
-  return text.split(' ').length
+  return text.split(' ').filter(Boolean).length
 }
