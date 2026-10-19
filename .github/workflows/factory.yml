@@ -13,4 +13,7 @@ jobs:
   factory:
     if: github.event.label.name == 'factory'
     uses: kenryu42/factory/.github/workflows/run.yml@main
+    # Self-hosted Mac. Safe here because only the owner can open PRs in this repo.
+    with:
+      runner: '["self-hosted", "factory"]'
     secrets: inherit
