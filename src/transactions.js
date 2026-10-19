@@ -11,3 +11,13 @@ export function loadTransactions(csvText, rules = []) {
     category: categorize(row.description, rules),
   }))
 }
+
+export function dedupe(transactions) {
+  const seen = new Set()
+  return transactions.filter((t) => {
+    const key = JSON.stringify([t.date, t.description, t.amount])
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
