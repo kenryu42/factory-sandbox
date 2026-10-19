@@ -9,3 +9,7 @@ test('slugify joins words with dashes', () => {
 test('wordCount counts space-separated words', () => {
   assert.equal(wordCount('one two three'), 3)
 })
+
+test('wordCount ignores extra spaces', () => {
+  assert.equal(wordCount('one  two '), 2)
+})
