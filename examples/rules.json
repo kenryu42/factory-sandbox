@@ -1,0 +1,6 @@
+[
+  { "match": "Starbucks", "category": "coffee" },
+  { "match": "Whole Foods", "category": "groceries" },
+  { "match": "Rent", "category": "housing" },
+  { "match": "Netflix", "category": "subscriptions" }
+]
