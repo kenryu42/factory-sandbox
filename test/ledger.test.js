@@ -26,6 +26,12 @@ test('categorize uses the first matching rule', () => {
   assert.equal(categorize('Shell', rules), 'uncategorized')
 })
 
+test('categorize ignores case when matching rules', () => {
+  const rules = [{ match: 'starbucks', category: 'coffee' }]
+  assert.equal(categorize('STARBUCKS #1234', rules), 'coffee')
+  assert.equal(categorize('StArBuCkS', rules), 'coffee')
+})
+
 test('summarizeByMonth totals each month', () => {
   const months = summarizeByMonth([
     { date: '2026-03-15', amount: 10, category: 'coffee' },
