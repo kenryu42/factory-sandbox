@@ -4,10 +4,13 @@ import { parseAmount } from './money.js'
 
 // CSV columns: date (YYYY-MM-DD), description, amount. Spending is positive, refunds are negative.
 export function loadTransactions(csvText, rules = []) {
-  return parseCsv(csvText).map((row) => ({
-    date: row.date,
-    description: row.description,
-    amount: parseAmount(row.amount),
-    category: categorize(row.description, rules),
-  }))
+  return parseCsv(csvText).map((row) => {
+    const amount = parseAmount(row.amount)
+    return {
+      date: row.date,
+      description: row.description,
+      amount,
+      category: categorize(row.description, rules, amount),
+    }
+  })
 }
