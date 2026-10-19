@@ -8,9 +8,20 @@ function option(args, name) {
   return i === -1 ? null : args[i + 1]
 }
 
+const USAGE = [
+  'Usage: ledger <command> [options]',
+  '',
+  'Commands:',
+  '  summary <file> [--rules <rules.json>]  Print monthly totals by category',
+].join('\n')
+
 // Returns the process exit code. Output goes through `out` so tests can capture it.
 export function main(args, out = console.log) {
   const [command, file] = args
+  if (!command || command === '--help') {
+    out(USAGE)
+    return 0
+  }
   if (command === 'summary') {
     const rulesFile = option(args, '--rules')
     const rules = rulesFile ? JSON.parse(readFileSync(rulesFile, 'utf8')) : []
@@ -23,5 +34,6 @@ export function main(args, out = console.log) {
     }
     return 0
   }
-  return 0
+  out(`Error: unknown command '${command}'\n\n${USAGE}`)
+  return 2
 }
