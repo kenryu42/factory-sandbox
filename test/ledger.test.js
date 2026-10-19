@@ -41,3 +41,14 @@ test('the summary command prints each month with its categories', () => {
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
 })
+
+test('categorize supports patterns and inclusive amount limits', () => {
+  const rules = [
+    { pattern: '^uber\\b', min: 20, max: 100, category: 'travel' },
+    { pattern: 'uber', category: 'rides' },
+  ]
+  assert.equal(categorize('UBER trip', rules, 20), 'travel')
+  assert.equal(categorize('UBER trip', rules, 100), 'travel')
+  assert.equal(categorize('UBER trip', rules, 19.99), 'rides')
+  assert.throws(() => categorize('x', [{ pattern: '(', category: 'a' }], 1), /\(/)
+})
