@@ -8,10 +8,11 @@ on:
 
 permissions:
   contents: read
+  issues: read
 
 jobs:
   factory:
-    if: github.event.label.name == 'factory'
+    if: github.event.label.name == 'factory' || github.event.label.name == 'factory:spec'
     uses: kenryu42/factory/.github/workflows/run.yml@main
     # Self-hosted Mac. Safe here because only the owner can open PRs in this repo.
     with:
