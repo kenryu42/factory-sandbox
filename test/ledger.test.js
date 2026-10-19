@@ -4,6 +4,7 @@ import { categorize } from '../src/categories.js'
 import { main } from '../src/cli.js'
 import { parseCsv } from '../src/csv.js'
 import { formatMoney, parseAmount } from '../src/money.js'
+import { findRecurring } from '../src/recurring.js'
 import { summarizeByMonth } from '../src/summary.js'
 
 test('parseCsv maps each row to the header', () => {
@@ -24,6 +25,24 @@ test('categorize uses the first matching rule', () => {
   const rules = [{ match: 'Whole Foods', category: 'groceries' }]
   assert.equal(categorize('Whole Foods Market', rules), 'groceries')
   assert.equal(categorize('Shell', rules), 'uncategorized')
+})
+
+test('findRecurring returns payments that repeat across months', () => {
+  const recurring = findRecurring([
+    { date: '2026-02-27', description: 'Netflix', amount: 15.49 },
+    { date: '2026-03-09', description: 'Netflix', amount: 15.49 },
+    { date: '2026-04-09', description: 'Netflix', amount: 15.49 },
+    { date: '2026-03-12', description: 'Whole Foods Market', amount: -12.0 },
+    { date: '2026-04-12', description: 'Whole Foods Market', amount: -12.0 },
+    { date: '2026-03-01', description: 'Starbucks', amount: 4.95 },
+    { date: '2026-03-20', description: 'Starbucks', amount: 4.95 },
+    { date: '2026-02-01', description: 'Gym', amount: 50 },
+    { date: '2026-03-01', description: 'Gym', amount: 50 },
+  ])
+  assert.deepEqual(recurring, [
+    { description: 'Gym', amount: 50, months: ['2026-02', '2026-03'] },
+    { description: 'Netflix', amount: 15.49, months: ['2026-02', '2026-03', '2026-04'] },
+  ])
 })
 
 test('summarizeByMonth totals each month', () => {
