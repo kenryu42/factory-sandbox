@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
 import { categorize } from '../src/categories.js'
 import { main } from '../src/cli.js'
@@ -32,6 +33,22 @@ test('summarizeByMonth totals each month', () => {
     { date: '2026-03-20', amount: 5, category: 'food' },
   ])
   assert.deepEqual(months, { '2026-03': { total: 15, byCategory: { coffee: 10, food: 5 } } })
+})
+
+test('summarizeByMonth ignores the local timezone', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      "import { summarizeByMonth } from './src/summary.js'; process.stdout.write(JSON.stringify(summarizeByMonth([{ date: '2026-03-01', amount: 1450, category: 'rent' }])))",
+    ],
+    { cwd: process.cwd(), env: { ...process.env, TZ: 'America/Los_Angeles' }, encoding: 'utf8' },
+  )
+  assert.equal(result.status, 0, result.stderr)
+  assert.deepEqual(JSON.parse(result.stdout), {
+    '2026-03': { total: 1450, byCategory: { rent: 1450 } },
+  })
 })
 
 test('the summary command prints each month with its categories', () => {
