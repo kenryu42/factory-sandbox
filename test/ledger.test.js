@@ -4,7 +4,7 @@ import { categorize } from '../src/categories.js'
 import { main } from '../src/cli.js'
 import { parseCsv } from '../src/csv.js'
 import { formatMoney, parseAmount } from '../src/money.js'
-import { summarizeByMonth } from '../src/summary.js'
+import { categoryPercents, summarizeByMonth } from '../src/summary.js'
 
 test('parseCsv maps each row to the header', () => {
   assert.deepEqual(parseCsv('date,description,amount\n2026-03-02,Starbucks,4.95\n'), [
@@ -40,4 +40,30 @@ test('the summary command prints each month with its categories', () => {
   assert.equal(code, 0)
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
+})
+
+test('categoryPercents rounds down and hands leftovers to the largest remainders', () => {
+  assert.deepEqual(
+    categoryPercents({ coffee: 4.95, groceries: 70.17, housing: 1450, subscriptions: 15.49 }),
+    { coffee: 0, groceries: 5, housing: 94, subscriptions: 1 },
+  )
+})
+
+test('categoryPercents omits zero and negative totals', () => {
+  assert.deepEqual(categoryPercents({ a: 3, b: 0, c: -1, d: 1 }), { a: 75, d: 25 })
+})
+
+test('categoryPercents breaks remainder ties by category name', () => {
+  assert.deepEqual(categoryPercents({ b: 1, a: 1, c: 1 }), { a: 34, b: 33, c: 33 })
+})
+
+test('the summary command appends percents with --percent', () => {
+  const lines = []
+  const code = main(
+    ['summary', 'examples/transactions.csv', '--rules', 'examples/rules.json', '--percent'],
+    (l) => lines.push(l),
+  )
+  assert.equal(code, 0)
+  assert.ok(lines.includes('  groceries        $70.17  5%'))
+  assert.ok(lines.includes('  housing          $1450.00  94%'))
 })
