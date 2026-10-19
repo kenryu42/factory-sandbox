@@ -3,5 +3,6 @@ export function slugify(title) {
 }
 
 export function wordCount(text) {
-  return text.split(' ').length
+  const trimmed = text.trim()
+  return trimmed === '' ? 0 : trimmed.split(/\s+/).length
 }
