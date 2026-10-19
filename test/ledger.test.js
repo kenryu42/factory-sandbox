@@ -20,6 +20,10 @@ test('formatMoney shows two decimals', () => {
   assert.equal(formatMoney(4.5), '$4.50')
 })
 
+test('formatMoney puts the sign before the dollar sign', () => {
+  assert.equal(formatMoney(-12), '-$12.00')
+})
+
 test('categorize uses the first matching rule', () => {
   const rules = [{ match: 'Whole Foods', category: 'groceries' }]
   assert.equal(categorize('Whole Foods Market', rules), 'groceries')

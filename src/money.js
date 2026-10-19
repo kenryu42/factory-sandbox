@@ -5,5 +5,6 @@ export function parseAmount(text) {
 }
 
 export function formatMoney(amount) {
-  return `$${amount.toFixed(2)}`
+  const sign = amount < 0 ? '-' : ''
+  return `${sign}$${Math.abs(amount).toFixed(2)}`
 }
