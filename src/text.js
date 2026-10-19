@@ -1,5 +1,5 @@
 export function slugify(title) {
-  return title.trim().replace(/[^A-Za-z0-9]+/g, '-')
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 }
 
 export function wordCount(text) {
