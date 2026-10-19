@@ -15,6 +15,18 @@ export function main(args, out = console.log) {
     const rulesFile = option(args, '--rules')
     const rules = rulesFile ? JSON.parse(readFileSync(rulesFile, 'utf8')) : []
     const months = summarizeByMonth(loadTransactions(readFileSync(file, 'utf8'), rules))
+    if (args.includes('--json')) {
+      const round = (n) => Number(n.toFixed(2))
+      const rounded = {}
+      for (const [month, { total, byCategory }] of Object.entries(months)) {
+        rounded[month] = {
+          total: round(total),
+          byCategory: Object.fromEntries(Object.entries(byCategory).map(([c, a]) => [c, round(a)])),
+        }
+      }
+      out(JSON.stringify(rounded))
+      return 0
+    }
     for (const [month, { total, byCategory }] of Object.entries(months).sort()) {
       out(`${month}  ${formatMoney(total)}`)
       for (const [category, amount] of Object.entries(byCategory).sort()) {
