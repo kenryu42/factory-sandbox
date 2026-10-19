@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { formatMoney } from './money.js'
 import { summarizeByMonth } from './summary.js'
-import { loadTransactions } from './transactions.js'
+import { dedupe, loadTransactions } from './transactions.js'
 
 function option(args, name) {
   const i = args.indexOf(name)
@@ -14,7 +14,8 @@ export function main(args, out = console.log) {
   if (command === 'summary') {
     const rulesFile = option(args, '--rules')
     const rules = rulesFile ? JSON.parse(readFileSync(rulesFile, 'utf8')) : []
-    const months = summarizeByMonth(loadTransactions(readFileSync(file, 'utf8'), rules))
+    const loaded = loadTransactions(readFileSync(file, 'utf8'), rules)
+    const months = summarizeByMonth(args.includes('--dedupe') ? dedupe(loaded) : loaded)
     for (const [month, { total, byCategory }] of Object.entries(months).sort()) {
       out(`${month}  ${formatMoney(total)}`)
       for (const [category, amount] of Object.entries(byCategory).sort()) {
