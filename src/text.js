@@ -5,3 +5,7 @@ export function slugify(title) {
 export function wordCount(text) {
   return text.split(' ').length
 }
+
+export function titleCase(text) {
+  return text.toLowerCase().replace(/(^|\s)\S/g, (match) => match.toUpperCase())
+}
