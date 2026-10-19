@@ -13,11 +13,20 @@ test('parseCsv maps each row to the header', () => {
 })
 
 test('parseAmount reads dollar strings', () => {
-  assert.equal(parseAmount('$1,450.00'), 1450)
+  assert.equal(parseAmount('$1,450.00'), 145000)
+  assert.equal(parseAmount('$4.95'), 495)
+  assert.equal(parseAmount('-12'), -1200)
+  assert.equal(parseAmount('.5'), 50)
+  assert.throws(() => parseAmount('abc'), /not an amount/)
+  assert.throws(() => parseAmount(''), /not an amount/)
 })
 
 test('formatMoney shows two decimals', () => {
-  assert.equal(formatMoney(4.5), '$4.50')
+  assert.equal(formatMoney(450), '$4.50')
+  assert.equal(formatMoney(495), '$4.95')
+  assert.equal(formatMoney(5), '$0.05')
+  assert.equal(formatMoney(0), '$0.00')
+  assert.equal(formatMoney(-450), '$-4.50')
 })
 
 test('categorize uses the first matching rule', () => {
@@ -28,10 +37,19 @@ test('categorize uses the first matching rule', () => {
 
 test('summarizeByMonth totals each month', () => {
   const months = summarizeByMonth([
-    { date: '2026-03-15', amount: 10, category: 'coffee' },
-    { date: '2026-03-20', amount: 5, category: 'food' },
+    { date: '2026-03-15', amount: 1000, category: 'coffee' },
+    { date: '2026-03-20', amount: 500, category: 'food' },
   ])
-  assert.deepEqual(months, { '2026-03': { total: 15, byCategory: { coffee: 10, food: 5 } } })
+  assert.deepEqual(months, { '2026-03': { total: 1500, byCategory: { coffee: 1000, food: 500 } } })
+})
+
+test('cents do not drift', () => {
+  assert.equal(parseAmount('0.10') + parseAmount('0.20'), 30)
+  const months = summarizeByMonth([
+    { date: '2026-03-15', amount: parseAmount('0.10'), category: 'a' },
+    { date: '2026-03-16', amount: parseAmount('0.20'), category: 'a' },
+  ])
+  assert.equal(months['2026-03'].total, 30)
 })
 
 test('the summary command prints each month with its categories', () => {
