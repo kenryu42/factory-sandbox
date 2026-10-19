@@ -41,3 +41,10 @@ test('the summary command prints each month with its categories', () => {
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
 })
+
+test('parseCsv reads quoted cells with commas and doubled quotes', () => {
+  assert.deepEqual(parseCsv('date,description,amount\n2026-03-04,"Coffee, large",5.25\n2026-03-05,"The ""Best"" Bar",3\n'), [
+    { date: '2026-03-04', description: 'Coffee, large', amount: '5.25' },
+    { date: '2026-03-05', description: 'The "Best" Bar', amount: '3' },
+  ])
+})
