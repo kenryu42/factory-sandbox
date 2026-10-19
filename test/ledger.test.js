@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { test } from 'node:test'
 import { categorize } from '../src/categories.js'
 import { main } from '../src/cli.js'
 import { parseCsv } from '../src/csv.js'
 import { formatMoney, parseAmount } from '../src/money.js'
 import { summarizeByMonth } from '../src/summary.js'
+import { dedupe } from '../src/transactions.js'
 
 test('parseCsv maps each row to the header', () => {
   assert.deepEqual(parseCsv('date,description,amount\n2026-03-02,Starbucks,4.95\n'), [
@@ -40,4 +44,25 @@ test('the summary command prints each month with its categories', () => {
   assert.equal(code, 0)
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
+})
+
+test('dedupe keeps the first occurrence and the original order', () => {
+  const a = { date: '2026-03-01', description: 'Coffee', amount: 4 }
+  const b = { date: '2026-03-02', description: 'Coffee', amount: 4 }
+  const c = { date: '2026-03-01', description: 'Coffee', amount: 5 }
+  const d = { date: '2026-03-01', description: 'Tea', amount: 4 }
+  assert.deepEqual(dedupe([a, b, { ...a }, c, d, { ...b }]), [a, b, c, d])
+})
+
+test('summary --dedupe drops duplicate rows before totalling', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ledger-'))
+  const file = join(dir, 'tx.csv')
+  writeFileSync(file, 'date,description,amount\n2026-03-02,Starbucks,4.95\n2026-03-02,Starbucks,4.95\n')
+  const run = (args) => {
+    const lines = []
+    assert.equal(main(['summary', file, ...args], (l) => lines.push(l)), 0)
+    return lines
+  }
+  assert.equal(run([])[0], '2026-03  $9.90')
+  assert.equal(run(['--dedupe'])[0], '2026-03  $4.95')
 })
