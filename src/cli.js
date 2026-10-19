@@ -23,5 +23,27 @@ export function main(args, out = console.log) {
     }
     return 0
   }
+  if (command === 'budget') {
+    const budgetsFile = option(args, '--budgets')
+    if (!budgetsFile) throw new Error('budget requires --budgets <budgets.json>')
+    const budgets = JSON.parse(readFileSync(budgetsFile, 'utf8'))
+    const rulesFile = option(args, '--rules')
+    const rules = rulesFile ? JSON.parse(readFileSync(rulesFile, 'utf8')) : []
+    const months = summarizeByMonth(loadTransactions(readFileSync(file, 'utf8'), rules))
+    let anyOver = false
+    for (const [month, { byCategory }] of Object.entries(months).sort()) {
+      for (const category of Object.keys(budgets).sort()) {
+        // Compare in whole cents to avoid floating-point noise.
+        const overCents = Math.round((byCategory[category] ?? 0) * 100) - Math.round(budgets[category] * 100)
+        if (overCents > 0) {
+          anyOver = true
+          out(`${month} ${category} over by ${formatMoney(overCents / 100)}`)
+        }
+      }
+    }
+    if (anyOver) return 1
+    out('All categories within budget.')
+    return 0
+  }
   return 0
 }
