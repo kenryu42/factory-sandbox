@@ -41,3 +41,29 @@ test('the summary command prints each month with its categories', () => {
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
 })
+
+test('the summary command limits the output to the --from month onward', () => {
+  const lines = []
+  const code = main(['summary', 'examples/transactions.csv', '--rules', 'examples/rules.json', '--from', '2026-03'], (l) => lines.push(l))
+  assert.equal(code, 0)
+  assert.ok(lines.some((line) => line.startsWith('2026-03')))
+  assert.ok(lines.some((line) => line.startsWith('2026-04')))
+  assert.ok(!lines.some((line) => line.startsWith('2026-02')))
+})
+
+test('the summary command limits the output through the --to month', () => {
+  const lines = []
+  const code = main(['summary', 'examples/transactions.csv', '--rules', 'examples/rules.json', '--to', '2026-03'], (l) => lines.push(l))
+  assert.equal(code, 0)
+  assert.ok(lines.some((line) => line.startsWith('2026-02')))
+  assert.ok(lines.some((line) => line.startsWith('2026-03')))
+  assert.ok(!lines.some((line) => line.startsWith('2026-04')))
+})
+
+test('the summary command rejects a malformed month range', () => {
+  const lines = []
+  const code = main(['summary', 'examples/transactions.csv', '--rules', 'examples/rules.json', '--from', '2026-3'], (l) => lines.push(l))
+  assert.equal(code, 2)
+  assert.equal(lines.length, 1)
+  assert.ok(lines[0].includes('2026-3'))
+})
