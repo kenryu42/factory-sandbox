@@ -12,6 +12,30 @@ test('parseCsv maps each row to the header', () => {
   ])
 })
 
+test('parseCsv handles CRLF line endings without leaving a trailing \r', () => {
+  assert.deepEqual(parseCsv('date,description,amount\r\n2026-03-02,Starbucks,4.95\r\n'), [
+    { date: '2026-03-02', description: 'Starbucks', amount: '4.95' },
+  ])
+})
+
+test('parseCsv keeps quoted commas, doubled quotes, and line breaks', () => {
+  assert.deepEqual(parseCsv('date,description,amount\n2026-03-02,"Dinner\nwith ""the"" team, LLC",4.95'), [
+    { date: '2026-03-02', description: 'Dinner\nwith "the" team, LLC', amount: '4.95' },
+  ])
+})
+
+test('parseCsv skips blank lines and tolerates a missing final newline', () => {
+  assert.deepEqual(parseCsv('date,description,amount\n\n2026-03-02,Starbucks,4.95'), [
+    { date: '2026-03-02', description: 'Starbucks', amount: '4.95' },
+  ])
+})
+
+test('parseCsv trims unquoted fields but keeps quoted fields verbatim', () => {
+  assert.deepEqual(parseCsv('date,description,amount\n 2026-03-02 ," padded ",4.95'), [
+    { date: '2026-03-02', description: ' padded ', amount: '4.95' },
+  ])
+})
+
 test('parseAmount reads dollar strings', () => {
   assert.equal(parseAmount('$1,450.00'), 1450)
 })
