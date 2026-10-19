@@ -26,6 +26,27 @@ test('categorize uses the first matching rule', () => {
   assert.equal(categorize('Shell', rules), 'uncategorized')
 })
 
+test('categorize matches pattern rules against the description, ignoring case', () => {
+  const rules = [{ pattern: 'whole\\s+foods', category: 'groceries' }]
+  assert.equal(categorize('WHOLE FOODS Market', rules, 50), 'groceries')
+})
+
+test('categorize applies inclusive min and max amount limits', () => {
+  const rules = [{ match: 'coffee', category: 'coffee', min: 3, max: 10 }]
+  assert.equal(categorize('coffee', rules, 3), 'coffee')
+  assert.equal(categorize('coffee', rules, 10), 'coffee')
+  assert.equal(categorize('coffee', rules, 2.99), 'uncategorized')
+  assert.equal(categorize('coffee', rules, 10.01), 'uncategorized')
+})
+
+test('categorize throws when a pattern is not a valid regular expression', () => {
+  const rules = [{ pattern: '([unclosed', category: 'x' }]
+  assert.throws(
+    () => categorize('anything', rules, 5),
+    (err) => err.message.includes('([unclosed'),
+  )
+})
+
 test('summarizeByMonth totals each month', () => {
   const months = summarizeByMonth([
     { date: '2026-03-15', amount: 10, category: 'coffee' },
