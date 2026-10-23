@@ -41,3 +41,22 @@ test('the summary command prints each month with its categories', () => {
   assert.ok(lines.includes('2026-04  $1465.49'))
   assert.ok(lines.includes('  subscriptions    $15.49'))
 })
+
+test('no arguments and --help print usage and exit 0', () => {
+  for (const args of [[], ['--help']]) {
+    const lines = []
+    const code = main(args, (l) => lines.push(l))
+    assert.equal(code, 0)
+    assert.ok(lines.join('\n').startsWith('Usage: ledger'))
+  }
+})
+
+test('an unknown command names itself, prints usage to err, and exits 2', () => {
+  const out = []
+  const err = []
+  const code = main(['frobnicate'], (l) => out.push(l), (l) => err.push(l))
+  assert.equal(code, 2)
+  const text = err.join('\n')
+  assert.ok(text.includes('frobnicate'))
+  assert.ok(text.includes('Usage: ledger'))
+})

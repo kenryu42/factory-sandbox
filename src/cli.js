@@ -8,9 +8,22 @@ function option(args, name) {
   return i === -1 ? null : args[i + 1]
 }
 
+const USAGE = `Usage: ledger <command> [options]
+
+Commands:
+  summary <file> [--rules <file>]  Print monthly totals by category
+  help                             Show this help
+
+Options:
+  -h, --help                       Show this help`
+
 // Returns the process exit code. Output goes through `out` so tests can capture it.
-export function main(args, out = console.log) {
+export function main(args, out = console.log, err = console.error) {
   const [command, file] = args
+  if (command === undefined || command === '--help' || command === '-h' || command === 'help') {
+    out(USAGE)
+    return 0
+  }
   if (command === 'summary') {
     const rulesFile = option(args, '--rules')
     const rules = rulesFile ? JSON.parse(readFileSync(rulesFile, 'utf8')) : []
@@ -23,5 +36,7 @@ export function main(args, out = console.log) {
     }
     return 0
   }
-  return 0
+  err(`ledger: unknown command '${command}'`)
+  err(USAGE)
+  return 2
 }
